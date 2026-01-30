@@ -8,28 +8,26 @@ const app = express();
 app.use(express.json());
 
 app.get("/growdevers", (req, res) => {
-    res.status(200).send({
-        ok: true,
-        mensagem: "Growdevers listados com sucesso!!",
-        dados: growdevers
-    });
-}) 
-
-app.get("/growdevers", (req, res) => {
-    const { idade } = req.query;
-    let dados = growdevers;
+    const { idade, nome, email, email_includes } = req.query;
+    console.log(req.query)
+    let dados = growdevers
+    if(email){
+        dados = dados.filter((item) => item.email === email);
+    }
     if(idade){
-        dados = dados.filter((item) => item.idade === 20)
-        return res.status(200).send({
-            ok: true,
-            mensagem: "Growdevers listados com sucesso",
-            dados
-        })
+        dados = dados.filter((item) => item.idade >= Number(idade))
+    }
+    if(nome){
+        dados = dados.filter((item) => item.nome.includes(nome.toLowerCase()));
+    }
+    if(email_includes){
+        dados = dados.filter((item) => item.email.includes(email_includes));
     }
 
     res.status(200).send({
         ok: false,
-        mensagem: "Pesquisa nao encontrada"
+        mensagem: "Growdevers listados com sucesso",
+        dados
     })
 })
 
@@ -68,7 +66,7 @@ app.get("/growdevers/:id", (req, res) => {
     res.status(200).send({
         ok: true,
         mensagem: "Growdever listado com sucesso",
-        dados: growdever
+        dados
     })
 });
 
