@@ -9,7 +9,6 @@ app.use(express.json());
 
 app.get("/growdevers", (req, res) => {
     const { idade, nome, email, email_includes } = req.query;
-    console.log(req.query)
     let dados = growdevers
     if(email){
         dados = dados.filter((item) => item.email === email);
@@ -54,7 +53,6 @@ app.post("/growdevers", (req, res) => {
 
 app.get("/growdevers/:id", (req, res) => {
     const { id } = req.params;
-
     const growdever = growdevers.find((item) => item.id === id);
     if(!growdever){
         return res.status(404).send({
@@ -66,7 +64,7 @@ app.get("/growdevers/:id", (req, res) => {
     res.status(200).send({
         ok: true,
         mensagem: "Growdever listado com sucesso",
-        dados
+        growdever
     })
 });
 
