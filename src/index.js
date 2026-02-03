@@ -30,7 +30,6 @@ app.get("/growdevers", (req, res) => {
     })
 })
 
-
 app.post("/growdevers", (req, res) => {
     const body = req.body;
     const novoGrowdever = {
@@ -91,6 +90,26 @@ app.put("/growdevers/:id", (req, res) => {
         growdever,
         dados: growdevers
     })
+})
+
+app.patch("/growdevers/:id", (req, res) => {
+    const { id } = read.params;
+
+    const growdever = growdevers.find((item) => item.id === id);
+    if(!growdever){
+        return res.status(404).send({
+            ok: false,
+            mensagem: "Growdever nao encontrado"
+        })
+    }
+
+    growdever.matriculado = !growdever.matriculado
+    res.status(200).send({
+        ok: true,
+        mensagem: "Growdever atualizado (matricula) com sucesso",
+        dados: growdevers
+    })
+
 })
 
 const port = process.env.PORT
