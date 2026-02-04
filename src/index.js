@@ -24,7 +24,7 @@ app.get("/growdevers", (req, res) => {
     }
 
     res.status(200).send({
-        ok: false,
+        ok: true,
         mensagem: "Growdevers listados com sucesso",
         dados
     })
@@ -93,7 +93,7 @@ app.put("/growdevers/:id", (req, res) => {
 })
 
 app.patch("/growdevers/:id", (req, res) => {
-    const { id } = read.params;
+    const { id } = req.params;
 
     const growdever = growdevers.find((item) => item.id === id);
     if(!growdever){
@@ -110,6 +110,24 @@ app.patch("/growdevers/:id", (req, res) => {
         dados: growdevers
     })
 
+})
+
+app.delete("/growdevers/:id", (req, res) => {
+    const { id } = req.params;
+
+    const growdeverIndex = growdevers.findIndex((item) => item.id === id);
+    if(growdeverIndex < 0){
+        return res.status(404).send({
+            ok: false,
+            mensagem: "Growdever nao encontrado"
+        })
+    }
+    growdevers.splice(growdeverIndex, 1);
+    res.status(200).send({
+        ok: true,
+        mensagem: "Growdever deletado com sucesso",
+        dados: growdevers
+    })
 })
 
 const port = process.env.PORT
