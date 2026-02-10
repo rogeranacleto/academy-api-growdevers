@@ -2,76 +2,48 @@ import express from 'express';
 import * as dotenv from 'dotenv';
 import { growdevers } from './dados.js'
 import { randomUUID } from 'crypto';
+import cors from "cors";
+import { logHelloMiddleware, logRequestMiddleware, validateMiddleware, blockUnenrolledUser } from './middlewares.js';
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cors());
+app.use(logHelloMiddleware);
 
 app.get("/growdevers", (req, res) => {
-    try{
+  try {
     const { idade, nome, email, email_includes } = req.query;
-    let dados = growdevers
-    if(email){
-        dados = dados.filter((item) => item.email === email);
+    let dados = growdevers;
+    if (email) {
+      dados = dados.filter((item) => item.email === email);
     }
-    if(idade){
-        dados = dados.filter((item) => item.idade >= Number(idade))
+    if (idade) {
+      dados = dados.filter((item) => item.idade >= Number(idade));
     }
-    if(nome){
-        dados = dados.filter((item) => item.nome.includes(nome.toLowerCase()));
+    if (nome) {
+      dados = dados.filter((item) => item.nome.includes(nome.toLowerCase()));
     }
-    if(email_includes){
-        dados = dados.filter((item) => item.email.includes(email_includes));
+    if (email_includes) {
+      dados = dados.filter((item) => item.email.includes(email_includes));
     }
 
     res.status(200).send({
-        ok: true,
-        mensagem: "Growdevers listados com sucesso",
-        dados
-    })
-    }catch(error){
-        return res.status(500).send({
-          ok: false,
-          mensagem: `Erro no servidor, ${error.toString()}`,
-        });
-    }
-})
+      ok: true,
+      mensagem: "Growdevers listados com sucesso",
+      dados,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      ok: false,
+      mensagem: `Erro no servidor, ${error.toString()}`,
+    });
+  }
+});
 
-app.post("/growdevers", (req, res) => {
+app.post("/growdevers", [validateMiddleware, logRequestMiddleware], (req, res) => { 
     try{
         const body = req.body;
-        if(!body.nome){
-            return res.status(400).send({
-                ok: false,
-                mensagem: `O campo nome precisa ser informado!`
-            })
-        }
-        if(!body.email){
-            return res.status(400).send({
-                ok: false,
-                mensagem: `O campo email precisa ser informado!`
-            })
-        }
-        if(!body.idade){
-            return res.status(400).send({
-                ok: false,
-                mensagem: `O campo idade precisa ser informado!`
-            })
-        }
-        if(Number(body.idade) < 18){
-            return res.status(400).send({
-                ok: false,
-                mensagem: `A idade do growdever precisa igual ou maior que 18 anos`
-            })
-        }
-
-        if(!body.matriculado){
-            return res.status(400).send({
-                ok: false,
-                mensagem: `O campo matriculado precisa ser informado com true ou false!`
-            })
-        }
-
         const novoGrowdever = {
             id: randomUUID(),
             nome: body.nome,
@@ -120,7 +92,7 @@ app.get("/growdevers/:id", (req, res) => {
     }
 });
 
-app.put("/growdevers/:id", (req, res) => {
+app.put("/growdevers/:id", [logRequestMiddleware, blockUnenrolledUser], (req, res) => {
     try{
         const { id } = req.params;
         const { nome, email, idade, matriculado } = req.body;
@@ -131,7 +103,6 @@ app.put("/growdevers/:id", (req, res) => {
             mensagem: "Growdever nao encontrado",
           });
         }
-
         growdever.nome = nome;
         growdever.email = email;
         growdever.idade = idade;
